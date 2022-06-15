@@ -1,0 +1,11 @@
+# postgres credentials to store metadata
+postgres_host: "inspektorpostgres"
+postgres_port: "5432"
+database_name: "postgres"
+postgres_username: "postgres"
+postgres_password: "postgrespass"
+jwt_key: "demokey"
+# github repository of access policy. Since inspektor use OPA 
+# to enforce access policies
+policy_repo: "https://github.com/poonai/inspektor-policy.git"
+github_access_token: ""

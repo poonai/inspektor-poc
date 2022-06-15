@@ -1,0 +1,81 @@
+version: "2"
+x-redash-service: &redash-service
+  image: redash/redash:8.0.0.b32245
+  depends_on:
+    - postgres
+    - redis
+  env_file: env
+  restart: always
+services:
+  server:
+    <<: *redash-service
+    command: server
+    ports:
+      - "5000:5000"
+    environment:
+      REDASH_WEB_WORKERS: 4
+  scheduler:
+    <<: *redash-service
+    command: scheduler
+    environment:
+      QUEUES: "celery"
+      WORKERS_COUNT: 1
+  scheduled_worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "scheduled_queries,schemas"
+      WORKERS_COUNT: 1
+  adhoc_worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "queries"
+      WORKERS_COUNT: 2
+  redis:
+    image: redis:5.0-alpine
+    restart: always
+  postgres:
+    image: postgres:13.5
+    env_file: env
+    restart: always
+  inspektorpostgres:
+    image: postgres:13.5
+    env_file: env
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./data:/var/lib/postgresql/data"
+  nginx:
+    image: redash/nginx:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    links:
+      - server:redash
+    restart: always
+  controlplane:
+    container_name: controlplane
+    image: schoolboy/inspektor-controlplane:latest
+    volumes:
+     - "./config.yaml:/config.yaml"
+    ports:
+     - 3123:3123
+     - 5003:5003
+    depends_on:
+      - "inspektorpostgres"
+    command: "/bin/bash -c \"sleep 5 ; ./inspektor\""
+  dataplane:
+    container_name: dataplane
+    image: "schoolboy/inspektor-dataplane:latest1"
+    ports:  
+     - "8081:8081"
+    environment:
+      RUST_LOG: "inspektor=debug"
+    volumes: 
+     - "./dataplane_config.yaml:/dataplane_config.yaml"
+    command: "./wait-for controlplane:3123 -- ./inspektor --config_file ./dataplane_config.yaml"
+    depends_on:
+    - "controlplane"

@@ -1,0 +1,16 @@
+# type of datasource
+driver_type: "postgres"
+# control plane address
+controlplane_addr: "controlplane:5003"
+# secret token that is used to connect dataplane with controlplane. This 
+# can be retrived from the dashboard.
+secret_token: "60c3f8848963377f6c764bf723477a224e028fa72aa50c3ff501b72aa3ba"
+# postgres_config contains the credentisla of datasource that we want to connect
+# for the simplicity we are using the same the database that we are using to store 
+# all inspektor metadata.
+postgres_config:
+  target_addr: "inspektorpostgres"
+  target_port: "5432"
+  target_username: "postgres"
+  target_password: "postgrespass"
+  proxy_listen_port: "8081"
