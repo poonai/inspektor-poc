@@ -1,4 +1,4 @@
-docker-compose up -d 
+docker-compose up -d inspektorpostgres
 
 echo "postgres instance is warming up"
 
@@ -8,7 +8,7 @@ echo "seeding inspektor sample data"
 
 psql "sslmode=disable host=localhost port=5432 dbname=postgres user=postgres password=postgrespass" < seed1.sql
 
-docker-compose down
+docker-compose stop
 
 echo "intializing redash database"
 
